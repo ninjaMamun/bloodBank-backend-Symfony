@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: DonorRepository::class)]
 class Donor
@@ -17,25 +18,32 @@ class Donor
     private ?int $id = null;
 
     #[ORM\Column(length: 3)]
+    #[Assert\NotBlank]
     private ?string $bloodGroup = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
     private ?string $mobile = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\Email()]
+    #[Assert\NotBlank]
+
     private ?string $mail = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    
     private ?\DateTimeInterface $lastDonateDate = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?int $numberOfDonation = null;
+
 
     #[ORM\Column(length: 255)]
-    private ?string $profilePicture = null;
+    private string $profilePicture;
 
     #[ORM\ManyToOne(inversedBy: 'donors')]
     #[ORM\JoinColumn(nullable: false)]
@@ -106,17 +114,6 @@ class Donor
         return $this;
     }
 
-    public function getNumberOfDonation(): ?int
-    {
-        return $this->numberOfDonation;
-    }
-
-    public function setNumberOfDonation(?int $numberOfDonation): self
-    {
-        $this->numberOfDonation = $numberOfDonation;
-
-        return $this;
-    }
 
     public function getProfilePicture(): ?string
     {

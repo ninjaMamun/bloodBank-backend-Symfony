@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Area;
+use App\Entity\Donor;
 use App\Repository\AreaRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -11,10 +12,23 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 
 class AreaController extends AbstractController
 {
+    private ValidatorInterface $validator;
+    private SerializerInterface $serializer;
+
+    public function __construct(ValidatorInterface $validator, SerializerInterface $serializer)
+    {
+        $this->validator = $validator;
+        $this->serializer = $serializer;
+    }
+
+
     #[Route('/areas', methods: ['GET'])]
     public function getAllArea(AreaRepository $areaRepository): JsonResponse
     {
@@ -32,6 +46,7 @@ class AreaController extends AbstractController
     }
 
 
+
     #[Route('/areas', methods: ['POST'])]
     public function createArea(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
@@ -44,25 +59,29 @@ class AreaController extends AbstractController
         return $this->json($area);
     }
 
+
+
     #[Route('/areas/{id}', methods: ['PUT'])]
-    public function PatchSingleArea(
+    public function PutSingleArea(
         Request                $request,
         EntityManagerInterface $entityManager,
-        AreaRepository         $areaRepository,
-        int                    $id): JsonResponse
+        Area                   $area): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
+        $area = $this->serializer->deserialize($request->getContent(), Area::class, 'json', [
+            AbstractNormalizer::OBJECT_TO_POPULATE => $area,
+        ]);
 
-        $updateArea = $areaRepository->find($id);
-        if ($updateArea === null) {
-            throw new NotFoundHttpException("Area pai nai vai");
+        $violations = $this->validator->validate($area);
+        if ($violations->count() > 0) {
+            return $this->json($violations, Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-        $updateArea->setName($data['name']);
 
         $entityManager->flush();
 
-        return $this->json($updateArea);
+        return $this->json($area);
     }
+
+
 
     #[Route('/areas/{id}', methods: ['DELETE'])]
     public function deleteSingleArea(
