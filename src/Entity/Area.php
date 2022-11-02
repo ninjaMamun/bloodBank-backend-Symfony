@@ -20,14 +20,6 @@ class Area
     #[Assert\NotBlank]
     private ?string $name = null;
 
-//    #[ORM\OneToMany(mappedBy: 'area', targetEntity: Donor::class)]
-//    private Collection $donors;
-
-//    public function __construct()
-//    {
-//        $this->donors = new ArrayCollection();
-//    }
-
     public function getId(): ?int
     {
         return $this->id;
@@ -45,33 +37,4 @@ class Area
         return $this;
     }
 
-//    /**
-//     * @return Collection<int, Donor>
-//     */
-//    public function getDonors(): Collection
-//    {
-//        return $this->donors;
-//    }
-//
-//    public function addDonor(Donor $donor): self
-//    {
-//        if (!$this->donors->contains($donor)) {
-//            $this->donors->add($donor);
-//            $donor->setArea($this);
-//        }
-//
-//        return $this;
-//    }
-//
-//    public function removeDonor(Donor $donor): self
-//    {
-//        if ($this->donors->removeElement($donor)) {
-//            // set the owning side to null (unless already changed)
-//            if ($donor->getArea() === $this) {
-//                $donor->setArea(null);
-//            }
-//        }
-//
-//        return $this;
-//    }
 }

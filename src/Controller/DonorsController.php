@@ -57,12 +57,6 @@ class DonorsController extends AbstractController
         }
 
 
-        $violations = $this->validator->validate($donor);
-
-        if ($violations->count() > 0) {
-            return $this->json($violations, Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
         $entityManager->persist($donor);
         $entityManager->flush();
 

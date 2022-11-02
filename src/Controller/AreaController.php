@@ -3,14 +3,13 @@
 namespace App\Controller;
 
 use App\Entity\Area;
-use App\Entity\Donor;
 use App\Repository\AreaRepository;
+use App\Repository\DonorRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -46,19 +45,21 @@ class AreaController extends AbstractController
     }
 
 
-
     #[Route('/areas', methods: ['POST'])]
     public function createArea(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-        $area = new Area();
-        $area->setName($data['name']);
+        $area = $this->serializer->deserialize($request->getContent(), Area::class, 'json');
+
+        $violations = $this->validator->validate($area);
+        if ($violations->count() > 0) {
+            return $this->json($violations, Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         $entityManager->persist($area);
         $entityManager->flush();
 
         return $this->json($area);
     }
-
 
 
     #[Route('/areas/{id}', methods: ['PUT'])]
@@ -82,7 +83,6 @@ class AreaController extends AbstractController
     }
 
 
-
     #[Route('/areas/{id}', methods: ['DELETE'])]
     public function deleteSingleArea(
         AreaRepository         $areaRepository,
@@ -96,5 +96,21 @@ class AreaController extends AbstractController
 
         return new Response('', 204);
     }
+
+    //Get All the donors of a specific area
+
+    #[Route('/areas/{id}/donors', methods: ['GET'])]
+    public function getDonorsOfSpecificArea(Area $area, DonorRepository $donorRepository): JsonResponse
+    {
+
+        $donors = $donorRepository->findBy([
+            'area' => $area
+        ]);
+
+        return $this -> json($donors);
+
+
+    }
+
 
 }
