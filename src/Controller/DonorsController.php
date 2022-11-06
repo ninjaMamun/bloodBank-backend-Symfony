@@ -10,6 +10,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mailer\Transport;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -48,6 +51,7 @@ class DonorsController extends AbstractController
     public function createDonor(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
 
+        /** @var Donor $donor */
         $donor = $this->serializer->deserialize($request->getContent(), Donor::class, 'json');
 
 
@@ -60,9 +64,30 @@ class DonorsController extends AbstractController
         $entityManager->persist($donor);
         $entityManager->flush();
 
+
+        //Send Email when user Create
+        $name = $donor->getName();
+        $email = $donor->getMail();
+
+        $text = <<<Body
+Hello $name;
+
+Thank you for singing up to bloodBank!
+Body;
+        $email = (new Email())
+            ->from('support@bloodbank.com')
+            ->to($email)
+            ->subject('Welcome to BloodBank!')
+            ->text($text);
+
+        $dsn = 'smtp://127.0.0.1:1025';
+        $transport = Transport::fromDsn($dsn);
+
+        $mailer = new Mailer($transport);
+        $mailer->send($email);
+
+
         return $this->json($donor);
-
-
     }
 
 
