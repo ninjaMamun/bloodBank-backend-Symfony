@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
@@ -48,7 +49,7 @@ class DonorsController extends AbstractController
 
 
     #[Route('/donors', methods: ['POST'])]
-    public function createDonor(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    public function createDonor(Request $request, EntityManagerInterface $entityManager, MailerInterface $mailer): JsonResponse
     {
 
         /** @var Donor $donor */
@@ -80,12 +81,8 @@ Body;
             ->subject('Welcome to BloodBank!')
             ->text($text);
 
-        $dsn = 'smtp://127.0.0.1:1025';
-        $transport = Transport::fromDsn($dsn);
 
-        $mailer = new Mailer($transport);
         $mailer->send($email);
-
 
         return $this->json($donor);
     }
